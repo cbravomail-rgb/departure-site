@@ -1,0 +1,455 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Departure: Take back your time</title>
+<link rel="icon" href="icon.png">
+<meta name="description" content="A departure-board home screen for Android that helps you use your phone less. Time flies. Make it yours.">
+<style>
+@font-face{font-family:Doto;src:url(fonts/doto.ttf);font-weight:100 900}
+@font-face{font-family:Oswald;src:url(fonts/oswald.ttf)}
+@font-face{font-family:Barlow;src:url(fonts/barlow_medium.ttf);font-weight:500}
+@font-face{font-family:Barlow;src:url(fonts/barlow_medium_italic.ttf);font-weight:500;font-style:italic}
+@font-face{font-family:Barlow;src:url(fonts/barlow_semibold.ttf);font-weight:600}
+:root{
+  --bg:#0D0D0E; --ink:#F1F1F2; --mute:#8B8D91; --faint:#4A4C50; --line:#2A2B2E; --panel:#121314;
+  --card1:#26272A; --card2:#222326; --amber:#F2A900;
+  --paper:#EDEBE6; --paper-ink:#151515; --paper-mute:#6B6B68; --paper-line:#D3D0C9;
+  --w:1180px;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;--doto:900;background:var(--bg);color:var(--ink);font:500 17px/1.55 Barlow,system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+a{color:inherit}
+.wrap{max-width:var(--w);margin:0 auto;padding:0 32px}
+.label{font:600 12px Barlow;letter-spacing:.32em;text-transform:uppercase;color:var(--mute)}
+
+/* ---------- nav ---------- */
+nav{position:sticky;top:0;z-index:10;background:var(--bg);border-bottom:1px solid var(--line)}
+nav .wrap{display:flex;align-items:center;height:68px;gap:24px}
+.brand{display:flex;align-items:center;gap:11px;text-decoration:none}
+.mark{width:32px;height:32px;border:1.5px solid var(--ink);border-radius:8px;display:grid;place-items:center}
+.brand b{font:600 22px Barlow;letter-spacing:.2px}
+nav .links{display:flex;gap:28px;margin-left:auto}
+nav .links a{text-decoration:none;color:var(--mute);font-weight:600;font-size:15px}
+nav .links a:hover{color:var(--ink)}
+.lang{display:flex;border:1px solid var(--line);border-radius:4px;overflow:hidden}
+.lang button{font:600 12px Barlow;letter-spacing:.15em;background:none;color:var(--mute);border:0;padding:7px 10px;cursor:pointer}
+.lang button[aria-pressed=true]{background:var(--ink);color:var(--bg)}
+
+/* ---------- buttons ---------- */
+.btn{display:inline-flex;align-items:center;gap:10px;font:600 16px Barlow;text-decoration:none;border-radius:6px;padding:14px 22px;cursor:pointer;border:1.5px solid var(--ink)}
+.btn.solid{background:var(--ink);color:var(--bg)}
+.btn.ghost{background:none;color:var(--ink);border-color:var(--line)}
+.btn.ghost:hover{border-color:var(--ink)}
+.btn small{font:600 11px Barlow;letter-spacing:.2em;opacity:.6;display:block;line-height:1}
+.btn .two{display:flex;flex-direction:column;text-align:left;gap:3px;line-height:1.1}
+
+/* ---------- split-flap ---------- */
+.flap{position:relative;display:inline-flex;align-items:center;justify-content:center;border-radius:5px;
+  background:linear-gradient(var(--card1) 50%,var(--card2) 50%);color:var(--ink);font-family:Oswald;line-height:1;overflow:hidden}
+.flap::after{content:"";position:absolute;left:0;right:0;top:50%;height:2px;margin-top:-1px;background:var(--bg)}
+.flap.sp{background:none;width:calc(var(--hw,20px)*.45)!important}.flap.sp::after{display:none}
+.flap.turn{animation:turn .09s linear}
+@keyframes turn{0%{transform:scaleY(1)}50%{transform:scaleY(.82);filter:brightness(.75)}100%{transform:scaleY(1)}}
+
+/* ---------- hero ---------- */
+.hero{padding:72px 0 96px}
+.hero .wrap{display:grid;grid-template-columns:1.25fr .75fr;gap:56px;align-items:center}
+.head{display:flex;flex-direction:column;gap:var(--hg)}
+.head .row{display:flex;gap:var(--hg)}
+.head .flap{width:var(--hw);height:calc(var(--hw)*1.42);font-size:calc(var(--hw)*1.06)}
+.hero{--hw:clamp(28px,5.1vw,62px);--hg:clamp(3px,.45vw,6px)}
+.tag{font:500 italic clamp(22px,2.4vw,30px) Barlow;color:var(--mute);margin:30px 0 0}
+.lead{font-size:19px;max-width:520px;margin:22px 0 34px;color:#C9CACD}
+.cta{display:flex;gap:14px;flex-wrap:wrap;align-items:center}
+.note{font-size:14px;color:var(--mute);margin-top:18px}
+
+/* ---------- phone ---------- */
+.phone{position:relative;width:100%;max-width:330px;margin:0 auto;aspect-ratio:720/1527;border-radius:38px;
+  background:#000;padding:10px;border:1px solid #2E2F33}
+.phone .scr{position:relative;width:100%;height:100%;border-radius:29px;overflow:hidden;background:var(--bg)}
+.phone img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:top;transition:opacity .35s}
+.phone img.off{opacity:0}
+
+/* ---------- statement ---------- */
+.state{border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:96px 0}
+.state p{font:600 clamp(28px,3.6vw,46px)/1.18 Barlow;margin:0;max-width:960px;letter-spacing:-.2px}
+.state p span{color:var(--mute)}
+.state .no{display:flex;gap:40px;flex-wrap:wrap;margin-top:48px}
+.state .no div{display:flex;align-items:baseline;gap:12px}
+.state .no b{font:900 30px Doto;font-variation-settings:'wght' 900;letter-spacing:.06em}
+.state .no em{font-style:normal;color:var(--mute);font-size:15px}
+
+/* ---------- board ---------- */
+.sec{padding:110px 0}
+.sec h2{font:600 clamp(32px,3.4vw,44px)/1.1 Barlow;margin:14px 0 14px;letter-spacing:-.3px}
+.sec .intro{color:var(--mute);max-width:560px;margin:0 0 48px;font-size:18px}
+.board{display:grid;grid-template-columns:1fr 330px;gap:64px;align-items:start}
+.tbl{border-top:1px solid var(--line)}
+.th,.tr{display:grid;grid-template-columns:76px 1fr 64px 128px;gap:16px;align-items:center}
+.th{font:600 15px Barlow;padding:14px 0;border-bottom:1px solid var(--line)}
+.th span:nth-child(3),.tr .g{text-align:center}
+.tr{padding:15px 0;border-bottom:1px solid var(--line);cursor:pointer;background:none;border-left:0;border-right:0;border-top:0;
+  width:100%;text-align:left;color:var(--ink);font:inherit;position:relative}
+.tr .t,.tr .d,.tr .g,.tr .s{font-family:Doto;font-weight:900;font-variation-settings:'wght' 900;letter-spacing:.08em}
+.tr .t{color:var(--mute);font-size:19px}
+.tr .d{font-size:clamp(19px,1.9vw,24px)}
+.tr .g{font-size:19px;color:var(--mute)}
+.tr .s{font-size:16px;color:var(--faint)}
+.tr .x{grid-column:2/-1;color:var(--mute);font-size:16px;max-height:0;overflow:hidden;transition:max-height .35s,margin .35s;font-family:Barlow}
+.tr .d{background-image:radial-gradient(circle,#1E1F22 1.2px,transparent 1.4px);background-size:6px 6px}
+.tr[aria-selected=true] .s{color:var(--ink);animation:blink 1.1s steps(1) infinite}
+.tr[aria-selected=true] .x{max-height:90px;margin-top:6px}
+.tr[aria-selected=true]::before{content:"";position:absolute;left:-18px;top:22px;width:6px;height:6px;background:var(--ink);border-radius:50%}
+.tr:not([aria-selected=true]):hover .d{color:#fff}
+.tr:not([aria-selected=true]) .d{color:#B9BABD}
+@keyframes blink{50%{opacity:.25}}
+.board .side{position:sticky;top:100px}
+.side .cap{text-align:center;margin-top:18px;font-size:14px;color:var(--mute)}
+
+/* ---------- lock ---------- */
+.lock{background:#000;padding:110px 0}
+.lock .clock{display:flex;justify-content:center;gap:var(--g);margin:56px 0 18px;--cw:clamp(38px,8.4vw,112px);--g:clamp(4px,.7vw,9px)}
+.lock .clock .flap{width:var(--cw);height:calc(var(--cw)*1.5);font-size:calc(var(--cw)*1.16)}
+.lock .clock .col{width:calc(var(--cw)*.24);display:flex;flex-direction:column;justify-content:center;gap:calc(var(--cw)*.32);align-items:center}
+.lock .clock .col i{width:calc(var(--cw)*.11);height:calc(var(--cw)*.11);border-radius:50%;background:var(--ink)}
+.lock .date{display:flex;justify-content:center;gap:3px;--dw:clamp(14px,1.6vw,20px)}
+.lock .date .flap{width:var(--dw);height:calc(var(--dw)*1.45);font-size:calc(var(--dw)*.9);border-radius:3px}
+.lock .date .flap::after{height:1px;margin-top:-.5px}
+.lock .copy{display:grid;grid-template-columns:1fr 1fr;gap:56px;margin-top:72px;align-items:end}
+.lock .motto{display:flex;align-items:center;gap:22px}
+.lock .motto .mark{width:64px;height:64px;border-radius:14px;flex:none}
+.lock .motto p{margin:0;font:500 italic 22px/1.35 Barlow;color:#8E9095}
+
+/* ---------- looks ---------- */
+.looks{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin-top:8px}
+.look{border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.look .sw{height:220px;position:relative;display:flex;flex-direction:column;justify-content:flex-end;padding:16px;gap:6px}
+.look .sw i{display:block;height:7px;border-radius:2px;opacity:.9}
+.look .nm{padding:12px 14px;font:600 13px Barlow;letter-spacing:.24em;border-top:1px solid var(--line)}
+.look .nm small{display:block;letter-spacing:0;font-weight:500;color:var(--mute);font-size:14px;margin-top:2px}
+
+/* ---------- paper section ---------- */
+.paper{background:var(--paper);color:var(--paper-ink)}
+.paper .label{color:var(--paper-mute)}
+.paper .intro{color:var(--paper-mute)}
+.cols{display:grid;grid-template-columns:repeat(3,1fr);gap:0;border-top:1.5px solid var(--paper-ink)}
+.cols > div{padding:28px 28px 8px 0}
+.cols > div + div{padding-left:28px;border-left:1px solid var(--paper-line)}
+.cols h3{font:900 22px Doto;font-variation-settings:'wght' 900;letter-spacing:.08em;margin:0 0 10px}
+.cols p{margin:0;color:#3D3D3B}
+.ticket{margin-top:96px;display:grid;grid-template-columns:1fr auto;border:1.5px solid var(--paper-ink);border-radius:10px;overflow:hidden}
+.ticket .main{padding:36px 40px}
+.ticket .stub{padding:36px 40px;border-left:1.5px dashed var(--paper-ink);display:flex;flex-direction:column;justify-content:center;gap:14px;min-width:300px}
+.ticket h3{font:600 34px/1.1 Barlow;margin:10px 0 12px}
+.ticket .grid{display:flex;gap:40px;margin-top:26px;flex-wrap:wrap}
+.ticket .grid div span{display:block}
+.ticket .grid b{font:900 22px Doto;font-variation-settings:'wght' 900;letter-spacing:.06em}
+.paper .btn.solid{background:var(--paper-ink);color:var(--paper);border-color:var(--paper-ink)}
+
+/* ---------- final ---------- */
+.final{padding:140px 0 120px;text-align:center}
+.final .head{align-items:center}
+.final{--hw:clamp(26px,4.6vw,58px);--hg:clamp(3px,.45vw,6px)}
+.final .tag{margin-top:28px}
+.final .cta{justify-content:center;margin-top:40px}
+footer{border-top:1px solid var(--line);padding:28px 0;color:var(--mute);font-size:14px}
+footer .wrap{display:flex;gap:24px;flex-wrap:wrap;align-items:center}
+footer .r{margin-left:auto;display:flex;gap:22px}
+footer a{text-decoration:none}
+
+/* ---------- responsive ---------- */
+@media (max-width:980px){
+  .hero .wrap{grid-template-columns:1fr}
+  .hero .phone{max-width:290px}
+  .board{grid-template-columns:1fr}
+  .board .side{position:static;order:-1;width:100%;max-width:290px;margin:0 auto}
+  .looks{grid-template-columns:repeat(3,1fr)}
+  .lock .copy{grid-template-columns:1fr}
+  .cols{grid-template-columns:1fr}
+  .cols > div + div{padding-left:0;border-left:0;border-top:1px solid var(--paper-line)}
+  .ticket{grid-template-columns:1fr}
+  .ticket .stub{border-left:0;border-top:1.5px dashed var(--paper-ink);min-width:0}
+  nav .links{display:none}
+  .lang{margin-left:auto}
+}
+@media (max-width:600px){
+  .wrap{padding:0 16px}
+  .hero{padding:44px 0 72px;--hw:calc((100vw - 32px - 8*4px)/9);--hg:4px}
+  .final{--hw:calc((100vw - 32px - 9*4px)/10);--hg:4px}
+  .sec,.lock{padding:80px 0}
+  .state{padding:72px 0}
+  .th,.tr{grid-template-columns:52px 1fr 92px;gap:10px}
+  .th span:nth-child(3),.tr .g{display:none}
+  .tr .t,.tr .g{font-size:15px}.tr .s{font-size:13px}
+  .tr .x{grid-column:1/-1}
+  .tr[aria-selected=true]::before{display:none}
+  .looks{grid-template-columns:repeat(2,1fr)}
+  .look .sw{height:150px}
+  .ticket .main,.ticket .stub{padding:26px 22px}
+  footer .r{margin-left:0}
+}
+@media (prefers-reduced-motion:reduce){.flap.turn,.tr[aria-selected=true] .s{animation:none}}
+</style>
+</head>
+<body>
+
+<nav><div class="wrap">
+  <a class="brand" href="#top" id="top-brand"><span class="mark" id="m1"></span><b>Departure</b></a>
+  <div class="links">
+    <a href="#board" data-en="How it works" data-es="Cómo funciona"></a>
+    <a href="#lock" data-en="Lock screen" data-es="Bloqueo"></a>
+    <a href="#privacy" data-en="Privacy" data-es="Privacidad"></a>
+    <a href="#ticket" data-en="Price" data-es="Precio"></a>
+  </div>
+  <div class="lang"><button data-l="en">EN</button><button data-l="es">ES</button></div>
+</div></nav>
+
+<header class="hero" id="top"><div class="wrap">
+  <div>
+    <div class="label" data-en="Android home screen · Now boarding" data-es="Pantalla de inicio para Android · Embarcando"></div>
+    <div class="head" id="h1" style="margin-top:22px"></div>
+    <p class="tag" data-en="Time flies. Make it yours." data-es="El tiempo vuela. Hazlo tuyo."></p>
+    <p class="lead" data-en="Departure turns your phone into a quiet airport board. No icons, no red badges, no feed: you see where you're going, not what's pulling at you." data-es="Departure convierte tu teléfono en un tablero de aeropuerto tranquilo. Sin íconos, sin avisos rojos, sin feed: ves hacia dónde vas, no lo que te atrapa."></p>
+    <div class="cta">
+      <a class="btn solid" href="#ticket"><span class="two"><small data-en="GET IT ON" data-es="DISPONIBLE EN"></small>Google Play</span></a>
+      <a class="btn ghost" href="#board" data-en="See the board" data-es="Ver el tablero"></a>
+    </div>
+    <p class="note" data-en="Free to try. One payment after that. No subscription." data-es="Pruébala gratis. Después, un solo pago. Sin suscripción."></p>
+  </div>
+  <div class="phone"><div class="scr"><img data-shot="board" alt=""></div></div>
+</div></header>
+
+<section class="state"><div class="wrap">
+  <p data-en="Every icon is a door. Every red badge is a hook. <span>Departure takes them away and leaves only names, so you open your phone for a reason and close it when you're done.</span>" data-es="Cada ícono es una puerta. Cada aviso rojo es un anzuelo. <span>Departure los quita y deja solo nombres, para que abras el teléfono por algo y lo cierres cuando termines.</span>"></p>
+  <div class="no">
+    <div><b>00</b><em data-en="icons" data-es="íconos"></em></div>
+    <div><b>00</b><em data-en="red badges" data-es="avisos rojos"></em></div>
+    <div><b>00</b><em data-en="feeds" data-es="feeds"></em></div>
+    <div><b>00</b><em data-en="accounts or ads" data-es="cuentas o anuncios"></em></div>
+  </div>
+</div></section>
+
+<section class="sec" id="board"><div class="wrap">
+  <div class="label" data-en="How it works" data-es="Cómo funciona"></div>
+  <h2 data-en="Today's departures" data-es="Salidas de hoy"></h2>
+  <p class="intro" data-en="Everything Departure does, as a flight board. Pick a row to see it on the phone." data-es="Todo lo que hace Departure, como un tablero de vuelos. Elige una fila para verla en el teléfono."></p>
+  <div class="board">
+    <div class="tbl" role="listbox" id="tbl">
+      <div class="th"><span data-en="Time" data-es="Hora"></span><span data-en="Destination" data-es="Destino"></span><span data-en="Gate" data-es="Puerta"></span><span data-en="Status" data-es="Estado"></span></div>
+    </div>
+    <div class="side">
+      <div class="phone"><div class="scr" id="scr"></div></div>
+    </div>
+  </div>
+</div></section>
+
+<section class="lock" id="lock"><div class="wrap">
+  <div class="label" data-en="Lock screen" data-es="Pantalla de bloqueo"></div>
+  <h2 style="font:600 clamp(32px,3.4vw,44px)/1.1 Barlow;margin:14px 0 0" data-en="A lock screen that only tells the time." data-es="Un bloqueo que solo da la hora."></h2>
+  <div class="clock" id="clock"></div>
+  <div class="date" id="date"></div>
+  <div class="copy">
+    <p style="margin:0;color:var(--mute);font-size:18px;max-width:480px" data-en="A large split-flap clock with seconds, always on black. Turn the phone sideways and read it across the room. Optional quartz tick, if you like the sound of time passing." data-es="Un gran reloj de tarjetas con segundos, siempre sobre negro. Gira el teléfono y léelo desde el otro lado de la pieza. Tic de cuarzo opcional, si te gusta oír pasar el tiempo."></p>
+    <div class="motto"><span class="mark" id="m2"></span><p>Departure: Take back your time.<br>Time flies. Make it yours.</p></div>
+  </div>
+</div></section>
+
+<section class="sec"><div class="wrap">
+  <div class="label" data-en="Five looks" data-es="Cinco aspectos"></div>
+  <h2 data-en="Black, white and grey. Nothing louder." data-es="Negro, blanco y gris. Nada más fuerte."></h2>
+  <p class="intro" data-en="Dark, paper and three greys. Or let it follow the day: paper in daylight, dark at night." data-es="Oscuro, papel y tres grises. O que siga el día: papel con luz, oscuro de noche."></p>
+  <div class="looks" id="looks"></div>
+</div></section>
+
+<section class="paper sec" id="privacy"><div class="wrap">
+  <div class="label" data-en="Privacy" data-es="Privacidad"></div>
+  <h2 data-en="Nothing to sign in to. Nothing to sell." data-es="Nada donde iniciar sesión. Nada que vender."></h2>
+  <p class="intro" data-en="Departure lives on your phone and stays there." data-es="Departure vive en tu teléfono y se queda ahí."></p>
+  <div class="cols">
+    <div><h3 data-en="NO ACCOUNT" data-es="SIN CUENTA"></h3><p data-en="No sign-up, no email, no profile. Install it and choose it as your home screen." data-es="Sin registro, sin correo, sin perfil. Instálala y elígela como pantalla de inicio."></p></div>
+    <div><h3 data-en="NO TRACKING" data-es="SIN RASTREO"></h3><p data-en="No ads, no analytics. Notification access is used only to count them per app and to silence the apps you delay." data-es="Sin anuncios ni analítica. El acceso a notificaciones solo sirve para contarlas por app y silenciar las que demoras."></p></div>
+    <div><h3 data-en="WEATHER, ROUNDED" data-es="CLIMA, REDONDEADO"></h3><p data-en="If you turn on local weather, only rounded coordinates go to MET Norway to get the temperature. Nothing else leaves your phone." data-es="Si activas el clima, solo coordenadas redondeadas van a MET Norway para obtener la temperatura. Nada más sale de tu teléfono."></p></div>
+  </div>
+
+  <div class="ticket" id="ticket">
+    <div class="main">
+      <div class="label" data-en="Boarding pass" data-es="Tarjeta de embarque"></div>
+      <h3 data-en="Try every feature, free. Then keep it, once." data-es="Prueba todo gratis. Después, quédatela con un pago."></h3>
+      <p style="margin:0;color:#3D3D3B;max-width:520px" data-en="Use Departure for a few days with nothing locked. If it gives you back some time, keep it with a single purchase. No subscription, ever." data-es="Usa Departure unos días sin nada bloqueado. Si te devuelve algo de tiempo, quédatela con un solo pago. Nunca una suscripción."></p>
+      <div class="grid">
+        <div><span class="label" data-en="Passenger" data-es="Pasajero"></span><b data-en="YOU" data-es="TÚ"></b></div>
+        <div><span class="label" data-en="From" data-es="Desde"></span><b data-en="SCROLLING" data-es="EL SCROLL"></b></div>
+        <div><span class="label" data-en="To" data-es="Hacia"></span><b data-en="YOUR TIME" data-es="TU TIEMPO"></b></div>
+        <div><span class="label" data-en="Class" data-es="Clase"></span><b data-en="ONE-TIME" data-es="PAGO ÚNICO"></b></div>
+      </div>
+    </div>
+    <div class="stub">
+      <span class="label" data-en="Android 10 or newer" data-es="Android 10 o superior"></span>
+      <a class="btn solid" href="#"><span class="two"><small data-en="GET IT ON" data-es="DISPONIBLE EN"></small>Google Play</span></a>
+      <span style="font-size:14px;color:var(--paper-mute)" data-en="English and Spanish." data-es="En español e inglés."></span>
+    </div>
+  </div>
+</div></section>
+
+<section class="final"><div class="wrap">
+  <div class="head" id="h2"></div>
+  <p class="tag" data-en="Departure: Take back your time." data-es="Departure: Recupera tu tiempo."></p>
+  <div class="cta">
+    <a class="btn solid" href="#ticket"><span class="two"><small data-en="GET IT ON" data-es="DISPONIBLE EN"></small>Google Play</span></a>
+  </div>
+</div></section>
+
+<footer><div class="wrap">
+  <a class="brand" href="#top"><span class="mark" id="m3" style="width:26px;height:26px;border-radius:6px"></span><b style="font-size:17px">Departure</b></a>
+  <span>© 2026</span>
+  <div class="r">
+    <a href="privacy/" data-en="Privacy policy" data-es="Política de privacidad"></a>
+    <a href="mailto:contact@departure-launcher.com" data-en="Contact" data-es="Contacto"></a>
+    <span data-en="Weather data: MET Norway" data-es="Datos del clima: MET Norway"></span>
+  </div>
+</div></footer>
+
+<script>
+const PLANE = (c, s) => `<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="${c}" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 20h19"/><path d="M21.6 8.4a1.7 1.7 0 0 0-2.1-1L14.3 9 7.6 5.6l-2.2.8 4.5 4.5-4.2 1.5-2.2-1.3-1.3.5 2.6 3.4 15.8-4.6a1.7 1.7 0 0 0 1-2z"/></svg>`;
+document.getElementById("m1").innerHTML = PLANE("#F1F1F2", 19);
+document.getElementById("m2").innerHTML = PLANE("#F1F1F2", 36);
+document.getElementById("m3").innerHTML = PLANE("#F1F1F2", 15);
+
+const Q = new URLSearchParams(location.search);
+let lang = Q.get("lang");
+if (!lang) { try { lang = localStorage.getItem("dep-lang"); } catch (e) {} }
+if (!lang) lang = (navigator.language || "en").startsWith("es") ? "es" : "en";
+const tr = (en, es) => lang === "es" ? es : en;
+
+/* ---- split-flap text: letters cycle through the alphabet before landing ---- */
+const ABC = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+function flapLine(el, text, delay) {
+  el.innerHTML = "";
+  [...text].forEach((ch, i) => {
+    const f = document.createElement("span");
+    f.className = "flap" + (ch === " " ? " sp" : "");
+    el.appendChild(f);
+    if (ch === " ") return;
+    const target = ABC.indexOf(ch), steps = 6 + ((i * 7) % 9);
+    let k = 0;
+    const tick = () => {
+      if (k >= steps) { f.textContent = ch; f.classList.remove("turn"); void f.offsetWidth; f.classList.add("turn"); return; }
+      f.textContent = ABC[(target - steps + k + 26) % 26];
+      f.classList.remove("turn"); void f.offsetWidth; f.classList.add("turn");
+      k++; setTimeout(tick, 70);
+    };
+    setTimeout(tick, delay + i * 45);
+  });
+}
+function flapHead(id, lines) {
+  const h = document.getElementById(id); h.innerHTML = "";
+  if (innerWidth < 600) lines = lines.flatMap(t => {  // wrap to 10 cards per row on phones
+    const out = []; t.split(" ").forEach(w => { const l = out.length - 1; if (l >= 0 && (out[l] + " " + w).length <= 10) out[l] += " " + w; else out.push(w); });
+    return out; });
+  lines.forEach((t, n) => { const r = document.createElement("div"); r.className = "row"; h.appendChild(r); flapLine(r, t, 250 + n * 380); });
+}
+
+/* ---- the departures board ---- */
+const ROWS = [
+  ["06:00", "ONLY TEXT", "A1", "board",
+    "No icons, no red badges, no feed. Your apps are destinations in dot-matrix letters.",
+    "SOLO TEXTO", "Sin íconos, sin avisos rojos, sin feed. Tus apps son destinos en letras de puntos LED."],
+  ["06:15", "DELAY AN APP", "A2", "delay",
+    "Long-press any app and delay it from 15 minutes to 2 hours. Its notifications stay silent.",
+    "DEMORA UNA APP", "Mantén presionada cualquier app y demórala de 15 minutos a 2 horas. Sus notificaciones quedan en silencio."],
+  ["06:30", "DELAYED MEANS DELAYED", "A3", "delayed",
+    "Until then it won't open. The gate counts down the minutes; cancelling early takes a 10-second hold.",
+    "DEMORADA ES DEMORADA", "Mientras tanto no se abre. La puerta cuenta los minutos; cancelar antes exige mantener 10 segundos."],
+  ["06:45", "TERMINAL A-Z", "B1", "terminal",
+    "Everything else is one letter away, from A B to Y Z. A filled letter means someone's waiting there.",
+    "TERMINAL A-Z", "Todo lo demás está a una letra, de A B a Y Z. Una letra rellena avisa que alguien te espera ahí."],
+  ["07:00", "FASTEN SEATBELT", "B2", "dim",
+    "Tap the plane and the board dims to 30%. At night it switches on by itself, with a soft chime.",
+    "ABRÓCHATE EL CINTURÓN", "Toca el avión y el tablero baja al 30%. De noche se enciende solo, con un ding suave."],
+  ["07:15", "WEATHER & INSTRUMENTS", "B3", "weather",
+    "Your city's temperature under the date. Fuel, Cabin and Signal stay faint until they matter.",
+    "CLIMA E INSTRUMENTOS", "La temperatura de tu ciudad bajo la fecha. Combustible, Cabina y Señal casi no se ven hasta que importan."],
+  ["07:30", "TELEPHONE", "C1", "board",
+    "Always boarding. Calls are never delayed.",
+    "TELÉFONO", "Siempre embarcando. Las llamadas nunca se demoran."],
+];
+let sel = 0, auto = true, timer;
+function buildBoard() {
+  const t = document.getElementById("tbl");
+  t.querySelectorAll(".tr").forEach(r => r.remove());
+  ROWS.forEach((r, i) => {
+    const b = document.createElement("button");
+    b.className = "tr"; b.setAttribute("role", "option");
+    b.innerHTML = `<span class="t">${r[0]}</span><span class="d">${tr(r[1], r[5])}</span><span class="g">${r[2]}</span><span class="s"></span><span class="x">${tr(r[4], r[6])}</span>`;
+    b.onclick = () => { auto = false; select(i); };
+    t.appendChild(b);
+  });
+  const scr = document.getElementById("scr"); scr.innerHTML = "";
+  [...new Set(ROWS.map(r => r[3]))].forEach(s => { const im = new Image(); im.dataset.s = s; im.src = `img/${lang}-${s}.jpg`; im.alt = ""; im.className = "off"; scr.appendChild(im); });
+  select(sel);
+}
+function select(i) {
+  sel = i;
+  document.querySelectorAll(".tr").forEach((b, j) => {
+    b.setAttribute("aria-selected", j === i);
+    b.querySelector(".s").textContent = j === i ? tr("BOARDING", "EMBARCANDO") : j < i ? tr("DEPARTED", "SALIÓ") : tr("ON TIME", "A TIEMPO");
+  });
+  document.querySelectorAll("#scr img").forEach(im => im.classList.toggle("off", im.dataset.s !== ROWS[i][3]));
+  clearTimeout(timer);
+  if (auto) timer = setTimeout(() => select((sel + 1) % ROWS.length), 5200);
+}
+if (Q.has("row")) { sel = +Q.get("row"); auto = false; }
+
+/* ---- live lock clock ---- */
+const clock = document.getElementById("clock"), dateEl = document.getElementById("date");
+const cells = [];
+for (let i = 0; i < 6; i++) {
+  if (i === 2 || i === 4) clock.insertAdjacentHTML("beforeend", `<span class="col"><i></i><i></i></span>`);
+  const f = document.createElement("span"); f.className = "flap"; clock.appendChild(f); cells.push(f);
+}
+function setFlap(f, ch) { if (f.textContent === ch) return; f.textContent = ch; f.classList.remove("turn"); void f.offsetWidth; f.classList.add("turn"); }
+function drawClock() {
+  const d = new Date(), p = n => String(n).padStart(2, "0");
+  const s = p(d.getHours()) + p(d.getMinutes()) + p(d.getSeconds());
+  cells.forEach((f, i) => setFlap(f, s[i]));
+  const days = tr("SUN MON TUE WED THU FRI SAT", "DOM LUN MAR MIÉ JUE VIE SÁB").split(" ");
+  const mons = tr("JAN FEB MAR APR MAY JUN JUL AUG SEP OCT NOV DEC", "ENE FEB MAR ABR MAY JUN JUL AGO SEP OCT NOV DIC").split(" ");
+  const txt = `${days[d.getDay()]} ${p(d.getDate())} ${mons[d.getMonth()]}`;
+  if (dateEl.dataset.t !== txt) { dateEl.dataset.t = txt; dateEl.innerHTML = [...txt].map(c => `<span class="flap${c === " " ? " sp" : ""}">${c}</span>`).join(""); }
+}
+drawClock(); setInterval(drawClock, 1000);
+
+/* ---- looks ---- */
+const LOOKS = [
+  ["DARK", "OSCURO", "#0D0D0E", "#F1F1F2", "Default", "Por defecto"],
+  ["PAPER", "PAPEL", "#EDEBE6", "#151515", "Ink on paper", "Tinta sobre papel"],
+  ["GRAPHITE", "GRAFITO", "#3A3B3E", "#F1F1F2", "Warm dark grey", "Gris oscuro"],
+  ["STEEL", "ACERO", "#6E7176", "#F6F6F7", "Cool middle grey", "Gris medio"],
+  ["MIST", "NIEBLA", "#B9BBBE", "#151515", "Soft light grey", "Gris claro"],
+];
+function buildLooks() {
+  document.getElementById("looks").innerHTML = LOOKS.map(l => `<div class="look"><div class="sw" style="background:${l[2]}">` +
+    [92, 70, 58, 80, 44].map(w => `<i style="width:${w}%;background:${l[3]}"></i>`).join("") +
+    `</div><div class="nm">${tr(l[0], l[1])}<small>${tr(l[4], l[5])}</small></div></div>`).join("");
+}
+
+/* ---- language ---- */
+function apply() {
+  document.documentElement.lang = lang;
+  document.querySelectorAll("[data-en]").forEach(e => e.innerHTML = e.dataset[lang]);
+  document.querySelectorAll("[data-shot]").forEach(im => im.src = `img/${lang}-${im.dataset.shot}.jpg`);
+  document.querySelectorAll(".lang button").forEach(b => b.setAttribute("aria-pressed", b.dataset.l === lang));
+  flapHead("h1", tr("TAKE BACK|YOUR TIME", "RECUPERA|TU TIEMPO").split("|"));
+  flapHead("h2", tr("TIME FLIES|MAKE IT YOURS", "EL TIEMPO VUELA|HAZLO TUYO").split("|"));
+  buildBoard(); buildLooks(); dateEl.dataset.t = ""; drawClock();
+}
+document.querySelectorAll(".lang button").forEach(b => b.onclick = () => {
+  lang = b.dataset.l; try { localStorage.setItem("dep-lang", lang); } catch (e) {} apply();
+});
+apply();
+</script>
+</body>
+</html>
